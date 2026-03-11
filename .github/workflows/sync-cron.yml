@@ -17,5 +17,11 @@ jobs:
             echo "Missing SYNC_ENDPOINT_URL secret."
             exit 1
           fi
-
-          curl --fail --silent --show-error --location "$SYNC_ENDPOINT_URL"
+          status=$(curl --silent --show-error --location --output response.json --write-out "%{http_code}" "$SYNC_ENDPOINT_URL")
+          echo "HTTP status: $status"
+          cat response.json
+          echo ""
+          if [ "$status" -lt 200 ] || [ "$status" -ge 300 ]; then
+            echo "Sync request failed."
+            exit 1
+          fi
