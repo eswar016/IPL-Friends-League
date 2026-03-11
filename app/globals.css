@@ -1,26 +1,89 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --page-bg: #070d1a;
+  --surface-bg: rgba(11, 22, 43, 0.82);
+  --surface-border: rgba(141, 168, 219, 0.25);
+  --text-primary: #eef4ff;
+  --text-muted: #9fb1d5;
+  --accent-gold: #ffc15a;
+  --font-body: "Trebuchet MS", Tahoma, "Segoe UI", Verdana, sans-serif;
+  --font-heading: "Arial Black", Impact, "Franklin Gothic Heavy", sans-serif;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --font-sans: var(--font-body);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  min-height: 100vh;
+  color: var(--text-primary);
+  font-family: var(--font-body), sans-serif;
+  background:
+    radial-gradient(1100px 700px at 10% -20%, rgba(255, 111, 60, 0.24), transparent 70%),
+    radial-gradient(900px 600px at 100% 0%, rgba(69, 182, 255, 0.2), transparent 68%),
+    linear-gradient(165deg, #040916 0%, #0b1730 55%, #09132a 100%);
+}
+
+::selection {
+  color: #0a152b;
+  background: #ffc15a;
+}
+
+.dashboard-shell {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1.25rem 1rem 2rem;
+}
+
+.surface-card {
+  border: 1px solid var(--surface-border);
+  background: var(--surface-bg);
+  border-radius: 1rem;
+  box-shadow: 0 18px 32px rgba(1, 5, 14, 0.35);
+  backdrop-filter: blur(9px);
+}
+
+.lift-on-hover {
+  transition: transform 0.22s ease, border-color 0.22s ease, box-shadow 0.22s ease;
+}
+
+.lift-on-hover:hover {
+  transform: translateY(-3px);
+  border-color: rgba(255, 193, 90, 0.42);
+  box-shadow: 0 22px 28px rgba(3, 9, 23, 0.5);
+}
+
+.section-heading {
+  font-family: var(--font-heading), sans-serif;
+  font-size: 1.1rem;
+  line-height: 1.2;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-primary);
+}
+
+.font-heading {
+  font-family: var(--font-heading), sans-serif;
+}
+
+.team-pill {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  border: 1px solid rgba(155, 178, 223, 0.25);
+  background: rgba(13, 24, 47, 0.92);
+  padding: 0.15rem 0.5rem;
+  font-size: 0.72rem;
+  line-height: 1.2;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+}
+
+@media (min-width: 640px) {
+  .dashboard-shell {
+    padding: 1.75rem 1.25rem 2.5rem;
+  }
 }

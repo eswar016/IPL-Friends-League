@@ -1,0 +1,21 @@
+name: IPL Sync Ping
+
+on:
+  schedule:
+    - cron: "*/15 * * * *"
+  workflow_dispatch:
+
+jobs:
+  trigger-sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger sync endpoint
+        env:
+          SYNC_ENDPOINT_URL: ${{ secrets.SYNC_ENDPOINT_URL }}
+        run: |
+          if [ -z "$SYNC_ENDPOINT_URL" ]; then
+            echo "Missing SYNC_ENDPOINT_URL secret."
+            exit 1
+          fi
+
+          curl --fail --silent --show-error --location "$SYNC_ENDPOINT_URL"

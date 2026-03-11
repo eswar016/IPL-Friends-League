@@ -1,36 +1,91 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# IPL Friends League 2026
 
-## Getting Started
+Next.js dashboard for tracking a 3-player IPL game.
 
-First, run the development server:
+## What is implemented
+
+- Frontend sports dashboard UI
+- Backend scheduler-driven data pipeline in Next.js server layer
+- REST endpoints for fixtures, points table, and combined dashboard payload
+- Low-call hybrid sync:
+  - RapidAPI nightly schedule discovery at 7:00 PM IST
+  - OpenSheet match-result and points updates on polling windows
+  - Redis-backed sync state with cached dashboard reads on refresh
+
+## Run locally
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm.cmd install
+npm.cmd run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open `http://localhost:3000`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Backend endpoints
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- `GET /api/league/dashboard`
+- `GET /api/league/fixtures`
+- `GET /api/league/points`
+- `GET /api/internal/sync` (cron/manual scheduler trigger)
 
-## Learn More
+## Environment variables
 
-To learn more about Next.js, take a look at the following resources:
+Create `.env.local`:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+IPL_API_REVALIDATE_SECONDS=300
+IPL_ENABLE_DUMMY_FALLBACK=false
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+# OpenSheet sources (results + points updates)
+IPL_FIXTURES_API_URL=https://opensheet.elk.sh/1Qa6-iiWnyRZwhYdJOkTrdiFUs64ovheRdrmQ4umkMEI/FixturesAPI
+IPL_POINTS_API_URL=https://opensheet.elk.sh/1Qa6-iiWnyRZwhYdJOkTrdiFUs64ovheRdrmQ4umkMEI/PointsAPI
 
-## Deploy on Vercel
+# RapidAPI used only for nightly schedule discovery
+RAPIDAPI_KEY=your_rapidapi_key
+RAPIDAPI_HOST=cricbuzz-cricket.p.rapidapi.com
+IPL_SERIES_ID=9241
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+# Redis persistence for scheduler state
+UPSTASH_REDIS_REST_URL=
+UPSTASH_REDIS_REST_TOKEN=
+IPL_SYNC_STATE_KEY=ipl:sync:state:v1
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+# Optional secret for manual scheduler trigger
+SYNC_CRON_KEY=
+```
+
+Notes:
+- `IPL_SERIES_ID=9241` is IPL 2026 as of March 11, 2026 for Cricbuzz RapidAPI.
+- Set `IPL_ENABLE_DUMMY_FALLBACK=false` to avoid showing hardcoded demo data.
+- `vercel.json` schedules `/api/internal/sync` daily at `13:30 UTC` (`7:00 PM IST`).
+- Scheduler logic enforces:
+  - exactly one RapidAPI schedule call/night until schedule completion
+  - zero nightly schedule calls after stable schedule completion
+  - OpenSheet-only result/points polling windows
+
+## Deploy (No Sleep + Persistent Data)
+
+1. Push this repo to GitHub.
+2. Create an Upstash Redis database.
+3. Import repo in Vercel and set env vars:
+   - `RAPIDAPI_KEY`, `RAPIDAPI_HOST`, `IPL_SERIES_ID`
+   - `IPL_FIXTURES_API_URL`, `IPL_POINTS_API_URL`
+   - `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN`
+   - `IPL_ENABLE_DUMMY_FALLBACK=false`
+   - `CRON_SECRET` (or `SYNC_CRON_KEY`)
+4. Deploy. Vercel gives a public URL (`https://your-project.vercel.app`).
+5. Trigger first sync once:
+   - `GET /api/internal/sync?key=YOUR_CRON_SECRET`
+6. Enable frequent sync (recommended for result polling):
+   - Use `.github/workflows/sync-cron.yml` (every 15 minutes).
+   - In GitHub repo secrets, set `SYNC_ENDPOINT_URL` to:
+     - `https://your-project.vercel.app/api/internal/sync?key=YOUR_CRON_SECRET`
+
+- If you are on Vercel Hobby, keep the built-in cron as daily and rely on GitHub Actions for 15-minute syncs.
+
+After first sync, the fetched snapshot is persisted in Redis and remains available across restarts/deploys until a later sync updates it.
+
+## Fallback behavior
+
+By default (`IPL_ENABLE_DUMMY_FALLBACK=false`), the app shows no-data/waiting state until first successful sync.
+If you explicitly set `IPL_ENABLE_DUMMY_FALLBACK=true`, it will show local dummy fixtures/points when live snapshot is unavailable.
