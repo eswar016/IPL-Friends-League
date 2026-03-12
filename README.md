@@ -27,6 +27,7 @@ Open `http://localhost:3000`.
 - `GET /api/league/fixtures`
 - `GET /api/league/points`
 - `GET /api/internal/sync` (cron/manual scheduler trigger)
+  - Use `?force=1` for an immediate schedule fetch outside nightly window.
 
 ## Environment variables
 

@@ -33,7 +33,12 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "Unauthorized sync trigger" }, { status: 401 });
   }
 
-  const summary = await runSchedulerSync();
+  const forceRaw = request.nextUrl.searchParams.get("force");
+  const force =
+    forceRaw === "1" ||
+    (typeof forceRaw === "string" && forceRaw.toLowerCase() === "true") ||
+    (typeof forceRaw === "string" && forceRaw.toLowerCase() === "yes");
+  const summary = await runSchedulerSync({ forceScheduleFetch: force });
   const status = summary.ok ? 200 : 500;
   return NextResponse.json(summary, { status });
 }

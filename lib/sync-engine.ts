@@ -32,6 +32,10 @@ export interface SyncRunSummary {
   error?: string;
 }
 
+export interface SyncRunOptions {
+  forceScheduleFetch?: boolean;
+}
+
 const pairKey = (team1: string, team2: string): string => [team1, team2].sort().join("|");
 
 const getMatchStateKey = (match: LeagueMatch): string =>
@@ -254,7 +258,10 @@ const assignOpenSheetResults = (
   return assignment;
 };
 
-const shouldRunScheduleFetch = (state: PersistedSyncState, now: Date): boolean => {
+const shouldRunScheduleFetch = (state: PersistedSyncState, now: Date, forceScheduleFetch = false): boolean => {
+  if (forceScheduleFetch) {
+    return true;
+  }
   const candidate = scheduleFetchCandidate(state, now);
   return candidate !== null && candidate <= now;
 };
@@ -264,8 +271,9 @@ const processScheduleFetch = async (
   now: Date,
   nowIso: string,
   revalidateSeconds: number,
+  forceScheduleFetch = false,
 ): Promise<boolean> => {
-  if (!shouldRunScheduleFetch(state, now)) {
+  if (!shouldRunScheduleFetch(state, now, forceScheduleFetch)) {
     return false;
   }
 
@@ -385,7 +393,7 @@ const buildDashboardFromState = (state: PersistedSyncState): LeagueDashboardData
   };
 };
 
-export const runSchedulerSync = async (): Promise<SyncRunSummary> => {
+export const runSchedulerSync = async (options: SyncRunOptions = {}): Promise<SyncRunSummary> => {
   const now = new Date();
   const nowIso = now.toISOString();
   const mode = getSyncStoreMode();
@@ -400,7 +408,13 @@ export const runSchedulerSync = async (): Promise<SyncRunSummary> => {
   const errors: string[] = [];
 
   try {
-    scheduleFetched = await processScheduleFetch(state, now, nowIso, revalidateSeconds);
+    scheduleFetched = await processScheduleFetch(
+      state,
+      now,
+      nowIso,
+      revalidateSeconds,
+      options.forceScheduleFetch ?? false,
+    );
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown schedule sync failure";
     errors.push(`schedule: ${message}`);
