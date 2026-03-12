@@ -1,4 +1,3 @@
-import { Footer } from "@/components/Footer";
 import { Header } from "@/components/Header";
 import { Leaderboard } from "@/components/Leaderboard";
 import { MatchResults } from "@/components/MatchResults";
@@ -19,7 +18,7 @@ export default async function Home() {
         nextSyncReason={dashboard.nextSyncReason}
       />
 
-      <main className="mt-6 grid gap-6 lg:grid-cols-[1.45fr_1fr]">
+      <main className="mt-4 grid gap-4 sm:mt-6 sm:gap-6 lg:grid-cols-[1.45fr_1fr]">
         <div className="space-y-6">
           <Leaderboard rows={dashboard.standings} />
           <PointsTable rows={dashboard.pointsTable} />
@@ -29,8 +28,6 @@ export default async function Home() {
           <MatchResults matches={dashboard.matches} />
         </div>
       </main>
-
-      <Footer />
     </div>
   );
 }
