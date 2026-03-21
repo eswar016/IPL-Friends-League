@@ -373,7 +373,7 @@ const buildDashboardFromState = (state: PersistedSyncState): LeagueDashboardData
   const fixtures = stateFixtures.length > 0 ? stateFixtures : useDummyFallback ? COMPLETED_MATCHES : [];
   const pointsTable = state.pointsTable.length > 0 ? state.pointsTable : useDummyFallback ? IPL_POINTS_TABLE : [];
   const source = hasLiveSnapshot ? "live_api" : useDummyFallback ? "fallback_dummy" : "no_data";
-  const refreshedAt = state.meta.lastSyncAt ?? new Date().toISOString();
+  const refreshedAt = state.meta.lastProviderFetchAt ?? state.global.lastScheduleFetchAt ?? null;
 
   return {
     source,
@@ -428,7 +428,11 @@ export const runSchedulerSync = async (options: SyncRunOptions = {}): Promise<Sy
   }
 
   const nextSync = computeNextSyncTarget(state, now);
+  const providerFetched = scheduleFetched || resultSummary.dueCount > 0 || resultSummary.pointsFetched;
   state.meta.lastSyncAt = nowIso;
+  if (providerFetched) {
+    state.meta.lastProviderFetchAt = nowIso;
+  }
   state.meta.nextSyncAt = nextSync.nextSyncAt;
   state.meta.nextSyncReason = nextSync.nextSyncReason;
   state.meta.lastError = errors.length > 0 ? errors.join(" | ") : null;

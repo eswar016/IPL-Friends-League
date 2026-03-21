@@ -3,7 +3,7 @@ import type { DataSource } from "@/types/league";
 
 interface HeaderProps {
   source: DataSource;
-  refreshedAt: string;
+  refreshedAt: string | null;
   nextSyncAt: string | null;
   nextSyncReason: string | null;
 }
@@ -30,7 +30,7 @@ const sourceLabel: Record<DataSource, string> = {
   no_data: "WAITING FOR FIRST SYNC",
 };
 
-const formatLastUpdated = (isoTimestamp: string): string =>
+const formatIstTimestamp = (isoTimestamp: string): string =>
   new Date(isoTimestamp).toLocaleString("en-IN", {
     dateStyle: "medium",
     timeStyle: "short",
@@ -54,7 +54,7 @@ export const Header = ({ source, refreshedAt, nextSyncAt, nextSyncReason }: Head
       </div>
       <div className="rounded-lg border border-[rgba(141,168,219,0.3)] bg-[rgba(12,23,47,0.75)] px-3 py-2 text-xs tracking-wide text-[var(--text-muted)]">
         <p className="font-semibold text-[var(--accent-gold)]">{sourceLabel[source]}</p>
-        <p>Last refresh: {formatLastUpdated(refreshedAt)}</p>
+        <p>Last API fetch: {refreshedAt ? formatIstTimestamp(refreshedAt) : "Not yet"}</p>
         <NextUpdateCountdown nextSyncAt={nextSyncAt} nextSyncReason={nextSyncReason} />
       </div>
     </div>

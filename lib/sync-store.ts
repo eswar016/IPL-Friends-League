@@ -31,6 +31,7 @@ export interface PersistedGlobalState {
 
 export interface PersistedSyncMeta {
   lastSyncAt: string | null;
+  lastProviderFetchAt: string | null;
   nextSyncAt: string | null;
   nextSyncReason: string | null;
   lastError: string | null;
@@ -58,6 +59,7 @@ const DEFAULT_STATE: PersistedSyncState = {
   },
   meta: {
     lastSyncAt: null,
+    lastProviderFetchAt: null,
     nextSyncAt: null,
     nextSyncReason: null,
     lastError: null,

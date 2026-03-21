@@ -82,7 +82,7 @@ export interface SchedulerStatus {
 
 export interface LeagueDashboardData {
   source: DataSource;
-  refreshedAt: string;
+  refreshedAt: string | null;
   nextSyncAt: string | null;
   nextSyncReason: string | null;
   schedulerStatus?: SchedulerStatus;

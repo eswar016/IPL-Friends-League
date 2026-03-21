@@ -50,14 +50,14 @@ export const NextUpdateCountdown = ({ nextSyncAt, nextSyncReason }: NextUpdateCo
   if (!nextSyncAt) {
     return (
       <div className="mt-2 text-xs text-[var(--text-muted)]">
-        <p>Next update: waiting for scheduler run</p>
+        <p>Next API fetch: waiting for scheduler window</p>
       </div>
     );
   }
 
   return (
     <div className="mt-2 text-xs text-[var(--text-muted)]">
-      <p>Next update (IST): {formatIst(nextSyncAt)}</p>
+      <p>Next API fetch (IST): {formatIst(nextSyncAt)}</p>
       <p>Countdown: {countdown}</p>
       {nextSyncReason ? <p>{nextSyncReason}</p> : null}
     </div>
