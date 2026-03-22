@@ -38,9 +38,15 @@ export async function GET(request: NextRequest) {
     forceRaw === "1" ||
     (typeof forceRaw === "string" && forceRaw.toLowerCase() === "true") ||
     (typeof forceRaw === "string" && forceRaw.toLowerCase() === "yes");
-  const summary = await runSchedulerSync({ forceScheduleFetch: force });
-  const status = summary.ok ? 200 : 500;
-  return NextResponse.json(summary, { status });
+  try {
+    const summary = await runSchedulerSync({ forceScheduleFetch: force });
+    // Always 200 when the handler ran: GitHub Actions / monitors treat non-2xx as "job failed".
+    // Check JSON field `ok` for provider/sync success; `error` when `ok` is false.
+    return NextResponse.json(summary, { status: 200 });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Unknown sync failure";
+    return NextResponse.json({ ok: false, error: message }, { status: 500 });
+  }
 }
 
 export async function POST(request: NextRequest) {

@@ -21,7 +21,18 @@ jobs:
           echo "HTTP status: $status"
           cat response.json
           echo ""
-          if [ "$status" -lt 200 ] || [ "$status" -ge 300 ]; then
-            echo "Sync request failed."
+          # 401 = wrong URL, missing key, or deployment protection — must fail loudly.
+          if [ "$status" = "401" ] || [ "$status" = "403" ]; then
+            echo "Sync request failed: unauthorized or forbidden (check secret and Vercel deployment access)."
             exit 1
+          fi
+          if [ "$status" -lt 200 ] || [ "$status" -ge 300 ]; then
+            echo "Sync request failed (server or network error)."
+            exit 1
+          fi
+          if command -v jq >/dev/null 2>&1; then
+            ok=$(jq -r '.ok // empty' response.json 2>/dev/null || true)
+            if [ "$ok" = "false" ]; then
+              echo "Warning: sync completed but reported ok=false (see error field in JSON above). Workflow will not fail."
+            fi
           fi

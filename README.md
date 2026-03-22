@@ -28,6 +28,7 @@ Open `http://localhost:3000`.
 - `GET /api/league/points`
 - `GET /api/internal/sync` (cron/manual scheduler trigger)
   - Use `?force=1` for an immediate schedule fetch outside nightly window.
+  - Returns HTTP **200** when the sync handler finishes; use JSON field **`ok`** for success vs provider errors (so cron pings are not marked failed on RapidAPI/OpenSheet issues). **401/403** still mean auth or deployment access problems.
 
 ## Environment variables
 
