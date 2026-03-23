@@ -1,10 +1,7 @@
-import { NextUpdateCountdown } from "@/components/NextUpdateCountdown";
 import { SyncDiagnostics } from "@/components/SyncDiagnostics";
-import type { DataSource, SchedulerStatus } from "@/types/league";
+import type { SchedulerStatus } from "@/types/league";
 
 interface HeaderProps {
-  source: DataSource;
-  refreshedAt: string | null;
   nextSyncAt: string | null;
   nextSyncReason: string | null;
   schedulerStatus?: SchedulerStatus;
@@ -26,25 +23,7 @@ const CricketLogo = () => (
   </svg>
 );
 
-const sourceLabel: Record<DataSource, string> = {
-  live_api: "LIVE API",
-  fallback_dummy: "FALLBACK DUMMY DATA",
-  no_data: "WAITING FOR FIRST SYNC",
-};
-
-const formatIstTimestamp = (isoTimestamp: string): string => {
-  const d = new Date(isoTimestamp);
-  if (Number.isNaN(d.getTime())) {
-    return "—";
-  }
-  return d.toLocaleString("en-IN", {
-    dateStyle: "medium",
-    timeStyle: "short",
-    timeZone: "Asia/Kolkata",
-  });
-};
-
-export const Header = ({ source, refreshedAt, nextSyncAt, nextSyncReason, schedulerStatus }: HeaderProps) => (
+export const Header = ({ nextSyncAt, nextSyncReason, schedulerStatus }: HeaderProps) => (
   <header className="surface-card lift-on-hover relative overflow-hidden p-5 sm:p-7">
     <div className="pointer-events-none absolute -right-16 -top-16 h-44 w-44 rounded-full bg-[radial-gradient(circle,_rgba(255,111,60,0.35)_0%,_rgba(255,111,60,0)_70%)]" />
     <div className="relative z-10 flex flex-wrap items-start justify-between gap-4">
@@ -68,11 +47,7 @@ export const Header = ({ source, refreshedAt, nextSyncAt, nextSyncReason, schedu
           />
         ) : null}
       </div>
-      <div className="rounded-lg border border-[rgba(141,168,219,0.3)] bg-[rgba(12,23,47,0.75)] px-3 py-2 text-xs tracking-wide text-[var(--text-muted)]">
-        <p className="font-semibold text-[var(--accent-gold)]">{sourceLabel[source]}</p>
-        <p>Last API fetch: {refreshedAt ? formatIstTimestamp(refreshedAt) : "Not yet"}</p>
-        <NextUpdateCountdown nextSyncAt={nextSyncAt} nextSyncReason={nextSyncReason} />
-      </div>
+
     </div>
   </header>
 );

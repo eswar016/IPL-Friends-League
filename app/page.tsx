@@ -12,8 +12,6 @@ export default async function Home() {
   return (
     <div className="dashboard-shell">
       <Header
-        source={dashboard.source}
-        refreshedAt={dashboard.refreshedAt}
         nextSyncAt={dashboard.nextSyncAt}
         nextSyncReason={dashboard.nextSyncReason}
         schedulerStatus={dashboard.schedulerStatus}
