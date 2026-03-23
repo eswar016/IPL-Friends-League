@@ -119,9 +119,13 @@ export const loadSyncState = async (): Promise<PersistedSyncState> => {
     return structuredClone(memoryState);
   }
 
-  const raw = await redisClient.get<unknown>(STATE_KEY);
-  const state = parseState(raw);
-  return state;
+  try {
+    const raw = await redisClient.get<unknown>(STATE_KEY);
+    return parseState(raw);
+  } catch {
+    // Upstash outage / network: avoid crashing SSR; empty state until Redis works again.
+    return cloneDefaultState();
+  }
 };
 
 export const saveSyncState = async (state: PersistedSyncState): Promise<void> => {

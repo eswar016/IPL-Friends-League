@@ -32,12 +32,17 @@ const sourceLabel: Record<DataSource, string> = {
   no_data: "WAITING FOR FIRST SYNC",
 };
 
-const formatIstTimestamp = (isoTimestamp: string): string =>
-  new Date(isoTimestamp).toLocaleString("en-IN", {
+const formatIstTimestamp = (isoTimestamp: string): string => {
+  const d = new Date(isoTimestamp);
+  if (Number.isNaN(d.getTime())) {
+    return "—";
+  }
+  return d.toLocaleString("en-IN", {
     dateStyle: "medium",
     timeStyle: "short",
     timeZone: "Asia/Kolkata",
   });
+};
 
 export const Header = ({ source, refreshedAt, nextSyncAt, nextSyncReason, schedulerStatus }: HeaderProps) => (
   <header className="surface-card lift-on-hover relative overflow-hidden p-5 sm:p-7">

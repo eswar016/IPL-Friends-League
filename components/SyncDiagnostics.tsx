@@ -6,23 +6,33 @@ interface SyncDiagnosticsProps {
   nextSyncReason: string | null;
 }
 
-const formatIst = (isoTimestamp: string): string =>
-  new Date(isoTimestamp).toLocaleString("en-IN", {
+const formatIst = (isoTimestamp: string): string => {
+  const d = new Date(isoTimestamp);
+  if (Number.isNaN(d.getTime())) {
+    return "—";
+  }
+  return d.toLocaleString("en-IN", {
     dateStyle: "medium",
     timeStyle: "short",
     timeZone: "Asia/Kolkata",
   });
+};
 
-const formatUtc = (isoTimestamp: string): string =>
-  new Date(isoTimestamp).toLocaleString("en-GB", {
-    dateStyle: "medium",
-    timeStyle: "short",
-    timeZone: "UTC",
-    timeZoneName: "short",
-  });
+const formatUtc = (isoTimestamp: string): string => {
+  const d = new Date(isoTimestamp);
+  if (Number.isNaN(d.getTime())) {
+    return "—";
+  }
+  return `${d.toISOString().replace("T", " ").replace(/\.\d{3}Z$/, "")} UTC`;
+};
 
-const dash = (value: string | null | undefined): string =>
-  value && value.trim() ? formatIst(value) : "—";
+const dash = (value: string | null | undefined): string => {
+  if (value == null) {
+    return "—";
+  }
+  const s = typeof value === "string" ? value.trim() : String(value).trim();
+  return s ? formatIst(s) : "—";
+};
 
 export const SyncDiagnostics = ({ status, nextSyncAt, nextSyncReason }: SyncDiagnosticsProps) => (
   <details className="mt-3 max-w-xl rounded-md border border-[rgba(135,160,210,0.12)] bg-[rgba(8,14,28,0.35)] px-2.5 py-1.5 text-[10px] leading-relaxed text-[var(--text-muted)] sm:text-[11px]">
@@ -67,7 +77,7 @@ export const SyncDiagnostics = ({ status, nextSyncAt, nextSyncReason }: SyncDiag
       {status.lastError ? (
         <p className="rounded border border-[rgba(255,111,60,0.25)] bg-[rgba(255,111,60,0.06)] px-2 py-1 text-[var(--text-primary)]">
           <span className="font-semibold text-[#ffb489]">Last error: </span>
-          <span className="break-words font-mono text-[10px] sm:text-[11px]">{status.lastError}</span>
+          <span className="break-words font-mono text-[10px] sm:text-[11px]">{String(status.lastError)}</span>
         </p>
       ) : null}
     </div>

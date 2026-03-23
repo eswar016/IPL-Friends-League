@@ -17,6 +17,34 @@ const PLAYOFF_KEYWORDS = ["qualifier", "eliminator", "final"];
 const isDummyFallbackEnabled = (): boolean =>
   (process.env.IPL_ENABLE_DUMMY_FALLBACK ?? "false").trim().toLowerCase() === "true";
 
+/** Redis JSON may be hand-edited or migrated oddly — never let bad types crash the dashboard. */
+const coerceMetaString = (value: unknown): string | null => {
+  if (value == null) {
+    return null;
+  }
+  if (typeof value === "string") {
+    const trimmed = value.trim();
+    return trimmed === "" ? null : trimmed;
+  }
+  if (typeof value === "number" && Number.isFinite(value)) {
+    return new Date(value).toISOString();
+  }
+  if (value instanceof Date && !Number.isNaN(value.getTime())) {
+    return value.toISOString();
+  }
+  return null;
+};
+
+const coerceMetaError = (value: unknown): string | null => {
+  if (value == null) {
+    return null;
+  }
+  if (typeof value === "string") {
+    return value;
+  }
+  return String(value);
+};
+
 export interface SyncRunSummary {
   ok: boolean;
   mode: "redis" | "memory";
@@ -376,22 +404,24 @@ const buildDashboardFromState = (state: PersistedSyncState): LeagueDashboardData
   const pointsTable = state.pointsTable.length > 0 ? state.pointsTable : useDummyFallback ? IPL_POINTS_TABLE : [];
   const source = hasLiveSnapshot ? "live_api" : useDummyFallback ? "fallback_dummy" : "no_data";
   const refreshedAt =
-    state.meta.lastProviderFetchAt ?? state.global.lastScheduleFetchAt ?? null;
+    coerceMetaString(state.meta.lastProviderFetchAt) ??
+    coerceMetaString(state.global.lastScheduleFetchAt) ??
+    null;
 
   return {
     source,
     refreshedAt,
-    nextSyncAt: state.meta.nextSyncAt,
-    nextSyncReason: state.meta.nextSyncReason,
+    nextSyncAt: coerceMetaString(state.meta.nextSyncAt),
+    nextSyncReason: coerceMetaString(state.meta.nextSyncReason),
     schedulerStatus: {
       storeMode: getSyncStoreMode(),
-      scheduleComplete: state.global.scheduleComplete,
-      fixtureCount: state.global.fixtureCount,
-      stableNights: state.global.stableNights,
-      lastScheduleFetchAt: state.global.lastScheduleFetchAt,
-      lastSyncAt: state.meta.lastSyncAt ?? null,
-      lastProviderFetchAt: state.meta.lastProviderFetchAt ?? null,
-      lastError: state.meta.lastError ?? null,
+      scheduleComplete: Boolean(state.global.scheduleComplete),
+      fixtureCount: Number.isFinite(Number(state.global.fixtureCount)) ? Number(state.global.fixtureCount) : 0,
+      stableNights: Number.isFinite(Number(state.global.stableNights)) ? Number(state.global.stableNights) : 0,
+      lastScheduleFetchAt: coerceMetaString(state.global.lastScheduleFetchAt),
+      lastSyncAt: coerceMetaString(state.meta.lastSyncAt),
+      lastProviderFetchAt: coerceMetaString(state.meta.lastProviderFetchAt),
+      lastError: coerceMetaError(state.meta.lastError),
       nextGithubPingApproxAt: getNextUtcQuarterHourAfter(pageNow).toISOString(),
     },
     standings: computeStandings(PLAYERS, fixtures, TEAM_OWNERS),
@@ -464,11 +494,15 @@ export const runSchedulerSync = async (options: SyncRunOptions = {}): Promise<Sy
 
 export const getCachedDashboardData = async (): Promise<LeagueDashboardData> => {
   const state = await loadSyncState();
-  if (!state.meta.nextSyncAt) {
+  if (!coerceMetaString(state.meta.nextSyncAt)) {
     const nextSync = computeNextSyncTarget(state, new Date());
     state.meta.nextSyncAt = nextSync.nextSyncAt;
     state.meta.nextSyncReason = nextSync.nextSyncReason;
-    await saveSyncState(state);
+    try {
+      await saveSyncState(state);
+    } catch {
+      // Still render dashboard; next visit will retry persist. Avoids 500 when Redis is briefly down.
+    }
   }
   return buildDashboardFromState(state);
 };
