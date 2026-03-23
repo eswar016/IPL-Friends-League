@@ -16,6 +16,7 @@ export default async function Home() {
         refreshedAt={dashboard.refreshedAt}
         nextSyncAt={dashboard.nextSyncAt}
         nextSyncReason={dashboard.nextSyncReason}
+        schedulerStatus={dashboard.schedulerStatus}
       />
 
       <main className="mt-4 grid gap-4 sm:mt-6 sm:gap-6 lg:grid-cols-[1.45fr_1fr]">

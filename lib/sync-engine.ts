@@ -10,6 +10,7 @@ import {
   type PersistedSyncState,
 } from "@/lib/sync-store";
 import type { LeagueDashboardData, LeagueMatch } from "@/types/league";
+import { getNextUtcQuarterHourAfter } from "@/lib/next-utc-quarter-hour";
 import { createHash } from "node:crypto";
 
 const PLAYOFF_KEYWORDS = ["qualifier", "eliminator", "final"];
@@ -366,6 +367,7 @@ const processDueMatches = async (
 };
 
 const buildDashboardFromState = (state: PersistedSyncState): LeagueDashboardData => {
+  const pageNow = new Date();
   const stateFixtures = sortedLeagueMatches(Object.values(state.matches).map(toLeagueMatch));
   const hasLiveSnapshot = stateFixtures.length > 0 || state.pointsTable.length > 0;
   const dummyFallbackEnabled = isDummyFallbackEnabled();
@@ -373,7 +375,8 @@ const buildDashboardFromState = (state: PersistedSyncState): LeagueDashboardData
   const fixtures = stateFixtures.length > 0 ? stateFixtures : useDummyFallback ? COMPLETED_MATCHES : [];
   const pointsTable = state.pointsTable.length > 0 ? state.pointsTable : useDummyFallback ? IPL_POINTS_TABLE : [];
   const source = hasLiveSnapshot ? "live_api" : useDummyFallback ? "fallback_dummy" : "no_data";
-  const refreshedAt = state.meta.lastProviderFetchAt ?? state.global.lastScheduleFetchAt ?? null;
+  const refreshedAt =
+    state.meta.lastProviderFetchAt ?? state.global.lastScheduleFetchAt ?? null;
 
   return {
     source,
@@ -386,6 +389,10 @@ const buildDashboardFromState = (state: PersistedSyncState): LeagueDashboardData
       fixtureCount: state.global.fixtureCount,
       stableNights: state.global.stableNights,
       lastScheduleFetchAt: state.global.lastScheduleFetchAt,
+      lastSyncAt: state.meta.lastSyncAt ?? null,
+      lastProviderFetchAt: state.meta.lastProviderFetchAt ?? null,
+      lastError: state.meta.lastError ?? null,
+      nextGithubPingApproxAt: getNextUtcQuarterHourAfter(pageNow).toISOString(),
     },
     standings: computeStandings(PLAYERS, fixtures, TEAM_OWNERS),
     matches: evaluateMatches(fixtures, TEAM_OWNERS),

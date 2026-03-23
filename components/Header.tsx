@@ -1,11 +1,13 @@
 import { NextUpdateCountdown } from "@/components/NextUpdateCountdown";
-import type { DataSource } from "@/types/league";
+import { SyncDiagnostics } from "@/components/SyncDiagnostics";
+import type { DataSource, SchedulerStatus } from "@/types/league";
 
 interface HeaderProps {
   source: DataSource;
   refreshedAt: string | null;
   nextSyncAt: string | null;
   nextSyncReason: string | null;
+  schedulerStatus?: SchedulerStatus;
 }
 
 const CricketLogo = () => (
@@ -37,20 +39,29 @@ const formatIstTimestamp = (isoTimestamp: string): string =>
     timeZone: "Asia/Kolkata",
   });
 
-export const Header = ({ source, refreshedAt, nextSyncAt, nextSyncReason }: HeaderProps) => (
+export const Header = ({ source, refreshedAt, nextSyncAt, nextSyncReason, schedulerStatus }: HeaderProps) => (
   <header className="surface-card lift-on-hover relative overflow-hidden p-5 sm:p-7">
     <div className="pointer-events-none absolute -right-16 -top-16 h-44 w-44 rounded-full bg-[radial-gradient(circle,_rgba(255,111,60,0.35)_0%,_rgba(255,111,60,0)_70%)]" />
     <div className="relative z-10 flex flex-wrap items-start justify-between gap-4">
-      <div className="flex items-center gap-4">
-        <CricketLogo />
-        <div>
-          <p className="text-xs font-semibold tracking-[0.35em] text-[var(--text-muted)] sm:text-sm">
-            FRIENDS SPORTS DASHBOARD
-          </p>
-          <h1 className="font-heading text-3xl leading-tight font-bold text-[var(--text-primary)] sm:text-4xl">
-            IPL Friends League 2026
-          </h1>
+      <div className="flex min-w-0 flex-1 flex-col gap-3">
+        <div className="flex items-center gap-4">
+          <CricketLogo />
+          <div>
+            <p className="text-xs font-semibold tracking-[0.35em] text-[var(--text-muted)] sm:text-sm">
+              FRIENDS SPORTS DASHBOARD
+            </p>
+            <h1 className="font-heading text-3xl leading-tight font-bold text-[var(--text-primary)] sm:text-4xl">
+              IPL Friends League 2026
+            </h1>
+          </div>
         </div>
+        {schedulerStatus ? (
+          <SyncDiagnostics
+            status={schedulerStatus}
+            nextSyncAt={nextSyncAt}
+            nextSyncReason={nextSyncReason}
+          />
+        ) : null}
       </div>
       <div className="rounded-lg border border-[rgba(141,168,219,0.3)] bg-[rgba(12,23,47,0.75)] px-3 py-2 text-xs tracking-wide text-[var(--text-muted)]">
         <p className="font-semibold text-[var(--accent-gold)]">{sourceLabel[source]}</p>

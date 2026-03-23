@@ -31,7 +31,8 @@ export interface PersistedGlobalState {
 
 export interface PersistedSyncMeta {
   lastSyncAt: string | null;
-  lastProviderFetchAt: string | null;
+  /** Present after deploy; older Redis blobs may omit until first sync. */
+  lastProviderFetchAt?: string | null;
   nextSyncAt: string | null;
   nextSyncReason: string | null;
   lastError: string | null;

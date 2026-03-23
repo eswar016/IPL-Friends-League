@@ -78,6 +78,14 @@ export interface SchedulerStatus {
   fixtureCount: number;
   stableNights: number;
   lastScheduleFetchAt: string | null;
+  /** Last /api/internal/sync run that wrote Redis (heartbeat). */
+  lastSyncAt: string | null;
+  /** Last successful RapidAPI or OpenSheet fetch (same idea as dashboard refreshedAt). */
+  lastProviderFetchAt: string | null;
+  /** Provider/sync error from last scheduler run (if any). */
+  lastError: string | null;
+  /** Approximate next GitHub Actions ping (UTC quarter hour after page render). */
+  nextGithubPingApproxAt: string;
 }
 
 export interface LeagueDashboardData {
