@@ -23,6 +23,8 @@ const toEpoch = (isoDate: string | null): number =>
 const MatchCard = ({ match }: { match: MatchResultRow }) => {
   const startLabel = formatStart(match.startDate);
 
+  const winningOwner = match.winner === match.team1 ? PLAYER_NAME_BY_ID[match.owner1] : match.winner === match.team2 ? PLAYER_NAME_BY_ID[match.owner2] : null;
+
   return (
     <article className="lift-on-hover rounded-xl border border-[rgba(135,160,210,0.22)] bg-[rgba(12,20,39,0.9)] p-3 sm:p-4">
       <p className="text-sm font-semibold text-[var(--text-primary)] sm:text-base">
@@ -45,9 +47,16 @@ const MatchCard = ({ match }: { match: MatchResultRow }) => {
           </p>
         </>
       ) : (
-        <p className="mt-3 text-xs font-semibold text-[var(--accent-gold)] sm:text-sm">
-          Winner: {match.winner ?? (match.state === "complete" ? "Result unavailable" : "TBD")}
-        </p>
+        <div className="mt-3">
+          <p className="text-xs font-semibold text-[var(--accent-gold)] sm:text-sm">
+            Winner: {match.winner ?? (match.state === "complete" ? "Result unavailable" : "TBD")}
+          </p>
+          {winningOwner && match.state === "complete" ? (
+            <p className="mt-1 text-[13px] font-bold tracking-wide text-[#ffb489] sm:text-[15px]">
+              Winning Friend: {winningOwner} 🏆
+            </p>
+          ) : null}
+        </div>
       )}
 
       {match.statusText ? <p className="mt-2 text-xs text-[var(--text-muted)]">{match.statusText}</p> : null}
