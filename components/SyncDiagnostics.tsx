@@ -1,4 +1,5 @@
 import type { SchedulerStatus } from "@/types/league";
+import { ManualSyncButton } from "@/components/ManualSyncButton";
 
 interface SyncDiagnosticsProps {
   status: SchedulerStatus;
@@ -80,6 +81,7 @@ export const SyncDiagnostics = ({ status, nextSyncAt, nextSyncReason }: SyncDiag
           <span className="break-words font-mono text-[10px] sm:text-[11px]">{String(status.lastError)}</span>
         </p>
       ) : null}
+      <ManualSyncButton />
     </div>
   </details>
 );
