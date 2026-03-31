@@ -1,7 +1,7 @@
 import { COMPLETED_MATCHES, IPL_POINTS_TABLE, PLAYERS, TEAM_OWNERS } from "@/lib/constants";
 import { addMinutes, fromIstParts, getIstDateKey, getIstParts } from "@/lib/ist-time";
 import { evaluateMatches, computeStandings } from "@/lib/league";
-import { fetchOpenSheetFixtures, fetchOpenSheetPointsTable, fetchRapidScheduleFixtures, getLiveRevalidateSeconds } from "@/lib/live-data";
+import { fetchLiveLeaguePayload, fetchRapidScheduleFixtures, getLiveRevalidateSeconds } from "@/lib/live-data";
 import {
   getSyncStoreMode,
   loadSyncState,
@@ -348,8 +348,8 @@ const processDueMatches = async (
     return { dueCount: 0, finalizedCount: 0, pointsFetched: false };
   }
 
-  const openSheetFixtures = await fetchOpenSheetFixtures(revalidateSeconds);
-  const assignment = assignOpenSheetResults(Object.values(state.matches), openSheetFixtures);
+  const livePayload = await fetchLiveLeaguePayload();
+  const assignment = assignOpenSheetResults(Object.values(state.matches), livePayload.fixtures);
   const newlyFinalized: PersistedMatchState[] = [];
 
   dueMatches.forEach((match) => {
@@ -377,7 +377,7 @@ const processDueMatches = async (
 
   let pointsFetched = false;
   if (newlyFinalized.length > 0) {
-    const pointsTable = await fetchOpenSheetPointsTable(revalidateSeconds);
+    const pointsTable = livePayload.pointsTable;
     if (pointsTable.length > 0) {
       state.pointsTable = pointsTable;
     }
