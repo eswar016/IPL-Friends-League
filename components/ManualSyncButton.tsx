@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { forceSyncAction } from "@/app/actions/sync";
 
 export const ManualSyncButton = () => {
   const [isSyncing, setIsSyncing] = useState(false);
@@ -10,11 +11,9 @@ export const ManualSyncButton = () => {
   const handleSync = async () => {
     try {
       setIsSyncing(true);
-      const res = await fetch("/api/internal/sync?force=true", {
-        method: "POST",
-      });
-      if (!res.ok) {
-        throw new Error(`Sync failed with status: ${res.status}`);
+      const res = await forceSyncAction();
+      if (!res.success) {
+        throw new Error(`Sync failed: ${res.error}`);
       }
       // Revalidate data after successful sync
       router.refresh();
