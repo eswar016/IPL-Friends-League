@@ -63,6 +63,7 @@ export interface SyncRunSummary {
 
 export interface SyncRunOptions {
   forceScheduleFetch?: boolean;
+  forceResultFetch?: boolean;
 }
 
 const pairKey = (team1: string, team2: string): string => [team1, team2].sort().join("|");
@@ -339,9 +340,18 @@ const processDueMatches = async (
   now: Date,
   nowIso: string,
   revalidateSeconds: number,
+  forceResultFetch = false
 ): Promise<{ dueCount: number; finalizedCount: number; pointsFetched: boolean }> => {
   const dueMatches = Object.values(state.matches)
-    .filter((match) => !match.finalized && match.nextPollAt && Date.parse(match.nextPollAt) <= now.getTime())
+    .filter((match) => {
+      if (match.finalized) {
+        return false;
+      }
+      if (forceResultFetch && match.startDate && Date.parse(match.startDate) <= now.getTime()) {
+        return true;
+      }
+      return match.nextPollAt && Date.parse(match.nextPollAt) <= now.getTime();
+    })
     .sort((left, right) => Date.parse(left.nextPollAt ?? "") - Date.parse(right.nextPollAt ?? ""));
 
   if (dueMatches.length === 0) {
@@ -458,7 +468,7 @@ export const runSchedulerSync = async (options: SyncRunOptions = {}): Promise<Sy
   }
 
   try {
-    resultSummary = await processDueMatches(state, now, nowIso, revalidateSeconds);
+    resultSummary = await processDueMatches(state, now, nowIso, revalidateSeconds, options.forceResultFetch ?? false);
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown result sync failure";
     errors.push(`results: ${message}`);
