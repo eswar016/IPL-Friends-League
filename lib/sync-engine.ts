@@ -299,7 +299,7 @@ const processDueMatches = async (
   });
 
   let pointsFetched = false;
-  if (newlyFinalized.length > 0) {
+  if (newlyFinalized.length > 0 || forceResultFetch) {
     const pointsTable = livePayload.pointsTable;
     if (pointsTable.length > 0) {
       state.pointsTable = pointsTable;

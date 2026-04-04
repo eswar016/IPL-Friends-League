@@ -1,5 +1,8 @@
+"use client";
+
 import { PLAYER_NAME_BY_ID } from "@/lib/constants";
 import type { MatchResultRow } from "@/types/league";
+import { useState } from "react";
 
 interface MatchResultsProps {
   matches: MatchResultRow[];
@@ -22,7 +25,6 @@ const toEpoch = (isoDate: string | null): number =>
 
 const MatchCard = ({ match }: { match: MatchResultRow }) => {
   const startLabel = formatStart(match.startDate);
-
   const winningOwner = match.winner === match.team1 ? PLAYER_NAME_BY_ID[match.owner1] : match.winner === match.team2 ? PLAYER_NAME_BY_ID[match.owner2] : null;
 
   return (
@@ -65,6 +67,8 @@ const MatchCard = ({ match }: { match: MatchResultRow }) => {
 };
 
 export const MatchResults = ({ matches }: MatchResultsProps) => {
+  const [activeTab, setActiveTab] = useState<"upcoming" | "completed">("upcoming");
+
   const liveMatches = matches
     .filter((match) => match.state === "in_progress")
     .sort((left, right) => toEpoch(left.startDate) - toEpoch(right.startDate));
@@ -76,48 +80,86 @@ export const MatchResults = ({ matches }: MatchResultsProps) => {
     .sort((left, right) => toEpoch(left.startDate) - toEpoch(right.startDate));
 
   return (
-    <section className="surface-card p-4 sm:p-6">
-      <div className="mb-4 flex items-end justify-between gap-2">
-        <h2 className="section-heading">Match Results And Fixtures</h2>
-        <span className="text-xs font-semibold tracking-[0.16em] text-[var(--text-muted)]">SCROLL WINDOW</span>
+    <section className="surface-card p-4 sm:p-6 flex flex-col h-full">
+      <div className="mb-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <h2 className="section-heading m-0">Fixtures & Results</h2>
+        
+        <div className="flex rounded-lg border border-[rgba(135,160,210,0.3)] bg-[rgba(10,18,36,0.5)] p-1">
+          <button
+            type="button"
+            onClick={() => setActiveTab("upcoming")}
+            className={`rounded-md px-4 py-1.5 text-xs font-bold tracking-wider transition-colors duration-200 ${
+              activeTab === "upcoming"
+                ? "bg-[rgba(135,160,210,0.2)] text-[var(--accent-gold)]"
+                : "text-[var(--text-muted)] hover:text-white"
+            }`}
+          >
+            UPCOMING
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab("completed")}
+            className={`rounded-md px-4 py-1.5 text-xs font-bold tracking-wider transition-colors duration-200 ${
+              activeTab === "completed"
+                ? "bg-[rgba(135,160,210,0.2)] text-[var(--accent-gold)]"
+                : "text-[var(--text-muted)] hover:text-white"
+            }`}
+          >
+            COMPLETED
+          </button>
+        </div>
       </div>
 
-      <div className="match-scroll-window pr-1 sm:pr-2">
+      <div className="match-scroll-window pr-1 sm:pr-2 flex-grow">
         {liveMatches.length > 0 ? (
-          <div className="mb-4 flex items-center justify-between border-b border-[#ffb489]/30 pb-2">
-            <h3 className="text-sm font-bold tracking-[0.2em] text-[#ffb489]">🔴 LIVE IN PROGRESS</h3>
-            <span className="text-xs font-semibold text-[#ffb489]/80">{liveMatches.length}</span>
-          </div>
+          <>
+            <div className="mb-4 flex items-center justify-between border-b border-[#ffb489]/30 pb-2">
+              <h3 className="text-sm font-bold tracking-[0.2em] text-[#ffb489]">🔴 LIVE IN PROGRESS</h3>
+              <span className="text-xs font-semibold text-[#ffb489]/80">{liveMatches.length} Matches</span>
+            </div>
+            <div className="grid gap-3 mb-6">
+              {liveMatches.map((match) => (
+                <MatchCard key={match.id} match={match} />
+              ))}
+            </div>
+          </>
         ) : null}
-        <div className="grid gap-3">
-          {liveMatches.map((match) => (
-            <MatchCard key={match.id} match={match} />
-          ))}
-        </div>
 
-        {completedMatches.length > 0 ? (
-          <div className="mt-8 mb-4 flex items-center justify-between border-b border-[rgba(135,160,210,0.2)] pb-2">
-            <h3 className="text-sm font-bold tracking-[0.2em] text-[#87a0d2]">COMPLETED MATCHES</h3>
-            <span className="text-xs font-semibold text-[var(--accent-gold)]">{completedMatches.length} Played</span>
+        {activeTab === "completed" && (
+          <div className="fade-in">
+            <div className="mb-4 flex items-center justify-between border-b border-[rgba(135,160,210,0.2)] pb-2">
+              <h3 className="text-sm font-bold tracking-[0.2em] text-[#87a0d2]">COMPLETED MATCHES</h3>
+              <span className="text-xs font-semibold text-[var(--accent-gold)]">{completedMatches.length} Played</span>
+            </div>
+            {completedMatches.length > 0 ? (
+              <div className="grid gap-3">
+                {completedMatches.map((match) => (
+                  <MatchCard key={match.id} match={match} />
+                ))}
+              </div>
+            ) : (
+              <p className="text-center text-sm text-[var(--text-muted)]">No matches completed yet.</p>
+            )}
           </div>
-        ) : null}
-        <div className="grid gap-3">
-          {completedMatches.map((match) => (
-            <MatchCard key={match.id} match={match} />
-          ))}
-        </div>
+        )}
 
-        {upcomingMatches.length > 0 ? (
-          <div className="mt-8 mb-4 flex items-center justify-between border-b border-[rgba(135,160,210,0.2)] pb-2">
-            <h3 className="text-sm font-bold tracking-[0.2em] text-[var(--text-muted)]">UPCOMING FIXTURES</h3>
-            <span className="text-xs font-semibold text-[var(--text-muted)]">{upcomingMatches.length} Remaining</span>
+        {activeTab === "upcoming" && (
+          <div className="fade-in">
+            <div className="mb-4 flex items-center justify-between border-b border-[rgba(135,160,210,0.2)] pb-2">
+              <h3 className="text-sm font-bold tracking-[0.2em] text-[var(--text-muted)]">UPCOMING FIXTURES</h3>
+              <span className="text-xs font-semibold text-[var(--text-muted)]">{upcomingMatches.length} Remaining</span>
+            </div>
+            {upcomingMatches.length > 0 ? (
+              <div className="grid gap-3">
+                {upcomingMatches.map((match) => (
+                  <MatchCard key={match.id} match={match} />
+                ))}
+              </div>
+            ) : (
+              <p className="text-center text-sm text-[var(--text-muted)]">No upcoming fixtures scheduled.</p>
+            )}
           </div>
-        ) : null}
-        <div className="grid gap-3">
-          {upcomingMatches.map((match) => (
-            <MatchCard key={match.id} match={match} />
-          ))}
-        </div>
+        )}
       </div>
     </section>
   );
