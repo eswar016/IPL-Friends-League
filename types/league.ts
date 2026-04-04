@@ -38,6 +38,7 @@ export interface StandingRow {
   playerId: PlayerId;
   playerName: string;
   teams: TeamCode[];
+  activeTeams?: TeamCode[];
   accentColor: string;
   wins: number;
   matches: number;

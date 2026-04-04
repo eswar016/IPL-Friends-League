@@ -65,12 +65,33 @@ export const evaluateMatches = (
     };
   });
 
+const getCombinations = <T>(array: T[], size: number): T[][] => {
+  const result: T[][] = [];
+  const helper = (start: number, combo: T[]) => {
+    if (combo.length === size) {
+      result.push([...combo]);
+      return;
+    }
+    for (let i = start; i < array.length; i++) {
+      combo.push(array[i]);
+      helper(i + 1, combo);
+      combo.pop();
+    }
+  };
+  helper(0, []);
+  return result;
+};
+
 export const computeStandings = (
   players: PlayerProfile[],
   matches: LeagueMatch[],
   teamOwners: TeamOwnerMap,
 ): StandingRow[] => {
-  const tallies = makeTallyMap(players);
+  const teamTallies: Record<string, Tally> = {};
+  Object.keys(teamOwners).forEach((team) => {
+    teamTallies[team] = { wins: 0, matches: 0 };
+  });
+
   const reviewedMatches = evaluateMatches(matches, teamOwners);
 
   reviewedMatches.forEach((match) => {
@@ -78,29 +99,48 @@ export const computeStandings = (
       return;
     }
 
-    tallies[match.owner1].matches += 1;
-    tallies[match.owner2].matches += 1;
-
-    const winnerOwner = teamOwners[match.winner];
-    if (winnerOwner === match.owner1 || winnerOwner === match.owner2) {
-      tallies[winnerOwner].wins += 1;
-    }
+    if (teamTallies[match.team1]) teamTallies[match.team1].matches += 1;
+    if (teamTallies[match.team2]) teamTallies[match.team2].matches += 1;
+    if (teamTallies[match.winner]) teamTallies[match.winner].wins += 1;
   });
 
   return players
     .map((player) => {
-      const { wins, matches: playedMatches } = tallies[player.id];
-      const score = playedMatches === 0 ? 0 : wins / playedMatches;
+      const subsetSize = Math.min(player.teams.length, 3);
+      const subsets = getCombinations(player.teams, subsetSize);
+
+      let bestCombo: TeamCode[] = [];
+      let maxScore = -1;
+      let maxWins = -1;
+      let maxMatches = -1;
+
+      subsets.forEach((combo) => {
+        let w = 0;
+        let m = 0;
+        combo.forEach((team) => {
+          w += teamTallies[team]?.wins || 0;
+          m += teamTallies[team]?.matches || 0;
+        });
+        const score = m === 0 ? 0 : w / m;
+        
+        if (score > maxScore || (score === maxScore && w > maxWins)) {
+          maxScore = score;
+          maxWins = w;
+          maxMatches = m;
+          bestCombo = combo;
+        }
+      });
 
       return {
         rank: 0,
         playerId: player.id,
         playerName: player.name,
         teams: player.teams,
+        activeTeams: bestCombo,
         accentColor: player.accentColor,
-        wins,
-        matches: playedMatches,
-        score,
+        wins: maxWins,
+        matches: maxMatches,
+        score: maxScore,
       };
     })
     .sort(byStandingPriority)

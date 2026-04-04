@@ -42,11 +42,14 @@ export const Leaderboard = ({ rows }: LeaderboardProps) => (
               <td className="px-3 py-3 font-semibold text-[var(--text-primary)]">{row.playerName}</td>
               <td className="px-3 py-3">
                 <div className="flex flex-wrap gap-1.5">
-                  {row.teams.map((team) => (
-                    <span key={`${row.playerId}-${team}`} className="team-pill">
-                      {team}
-                    </span>
-                  ))}
+                  {row.teams.map((team) => {
+                    const isActive = row.activeTeams ? row.activeTeams.includes(team) : true;
+                    return (
+                      <span key={`${row.playerId}-${team}`} className={`team-pill ${isActive ? "" : "opacity-40 grayscale"}`}>
+                        {team}
+                      </span>
+                    );
+                  })}
                 </div>
               </td>
               <td className="px-3 py-3 font-semibold text-[var(--text-primary)]">{row.wins}</td>
