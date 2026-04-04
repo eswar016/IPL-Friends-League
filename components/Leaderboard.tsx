@@ -19,8 +19,8 @@ export const Leaderboard = ({ rows }: LeaderboardProps) => (
             <th className="px-3 py-2">Rank</th>
             <th className="px-3 py-2">Player</th>
             <th className="px-3 py-2">Teams</th>
-            <th className="px-3 py-2">Wins</th>
             <th className="px-3 py-2">Matches</th>
+            <th className="px-3 py-2">Wins</th>
             <th className="px-3 py-2">Score</th>
           </tr>
         </thead>
@@ -52,8 +52,8 @@ export const Leaderboard = ({ rows }: LeaderboardProps) => (
                   })}
                 </div>
               </td>
-              <td className="px-3 py-3 font-semibold text-[var(--text-primary)]">{row.wins}</td>
               <td className="px-3 py-3 font-semibold text-[var(--text-primary)]">{row.matches}</td>
+              <td className="px-3 py-3 font-bold text-[#4ade80] sm:text-[15px]">{row.wins}</td>
               <td className="px-3 py-3 font-bold text-[var(--accent-gold)]">{formatScore(row.score)}</td>
             </tr>
           ))}
