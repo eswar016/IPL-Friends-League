@@ -6,10 +6,12 @@ Next.js dashboard for tracking a 3-player IPL game.
 
 - Frontend sports dashboard UI
 - Backend scheduler-driven data pipeline in Next.js server layer
-- REST endpoints for fixtures, points table, and combined dashboard payload
-- Low-call hybrid sync:
-  - RapidAPI nightly schedule discovery at 7:00 PM IST
-  - OpenSheet match-result and points updates on polling windows
+- Dual-button manual GUI for specific administrative synchronizations (Scores vs Schedule mapping)
+- Real-time `Winning Friend` visual indicators dynamically evaluated from the local draft logic
+- Next.js Server Actions to securely bypass serverless/Vercel cron endpoint route blockages
+- Low-call manual sync architecture:
+  - RapidAPI queries strictly run when requested by the owner manually via the UI.
+  - Live data provider evaluates results on explicit manual command.
   - Redis-backed sync state with cached dashboard reads on refresh
 
 ## Run locally
@@ -21,14 +23,12 @@ npm.cmd run dev
 
 Open `http://localhost:3000`.
 
-## Backend endpoints
+## Backend & Sync Mechanisms
 
 - `GET /api/league/dashboard`
 - `GET /api/league/fixtures`
 - `GET /api/league/points`
-- `GET /api/internal/sync` (cron/manual scheduler trigger)
-  - Use `?force=1` for an immediate schedule fetch outside nightly window.
-  - Returns HTTP **200** when the sync handler finishes; use JSON field **`ok`** for success vs provider errors (so cron pings are not marked failed on RapidAPI/OpenSheet issues). **401/403** still mean auth or deployment access problems.
+- **Internal Sync Operations are handled purely through Next.js Server Actions** (`app/actions/sync.ts`). All background CRON jobs and auto-polling logic have been purposefully removed to eliminate unintended API limit usage. Sync is manually triggered by explicit clicks on the `Sync Scores & Points` or `Force Schedule Fetch` buttons.
 
 ## Environment variables
 
@@ -78,14 +78,10 @@ Notes:
 4. Deploy. Vercel gives a public URL (`https://your-project.vercel.app`).
 5. Trigger first sync once:
    - `GET /api/internal/sync?key=YOUR_CRON_SECRET`
-6. Enable frequent sync (recommended for result polling):
-   - Use `.github/workflows/sync-cron.yml` (every 15 minutes).
-   - In GitHub repo secrets, set `SYNC_ENDPOINT_URL` to:
-     - `https://your-project.vercel.app/api/internal/sync?key=YOUR_CRON_SECRET`
+6. **Manual Sync**:
+   - Since automated cron polling is intentionally disabled, you must click the "Sync Scores & Points" button on the UI whenever you wish to refresh and hydrate the real-time match results.
 
-- If you are on Vercel Hobby, keep the built-in cron as daily and rely on GitHub Actions for 15-minute syncs.
-
-After first sync, the fetched snapshot is persisted in Redis and remains available across restarts/deploys until a later sync updates it.
+After the first sync, the fetched snapshot is persisted in Redis and remains available across restarts/deploys until you manually pull a newer snapshot.
 
 ## Fallback behavior
 

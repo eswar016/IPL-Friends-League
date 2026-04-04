@@ -113,101 +113,22 @@ const hasPlayoffFixtures = (fixtures: LeagueMatch[]): boolean =>
   });
 
 const getBasePollTimes = (startDateIso: string): Date[] => {
-  const startDate = new Date(startDateIso);
-  const parts = getIstParts(startDate);
-
-  if (parts.hour === 15 && parts.minute === 30) {
-    return [
-      fromIstParts(parts.year, parts.month, parts.day, 18, 45),
-      fromIstParts(parts.year, parts.month, parts.day, 19, 0),
-      fromIstParts(parts.year, parts.month, parts.day, 19, 15),
-      fromIstParts(parts.year, parts.month, parts.day, 19, 30),
-    ];
-  }
-
-  if (parts.hour === 19 && parts.minute === 30) {
-    return [
-      fromIstParts(parts.year, parts.month, parts.day, 22, 30),
-      fromIstParts(parts.year, parts.month, parts.day, 22, 45),
-      fromIstParts(parts.year, parts.month, parts.day, 23, 0),
-      fromIstParts(parts.year, parts.month, parts.day, 23, 15),
-      fromIstParts(parts.year, parts.month, parts.day, 23, 30),
-    ];
-  }
-
-  return [addMinutes(startDate, 180), addMinutes(startDate, 195), addMinutes(startDate, 210), addMinutes(startDate, 225)];
+  return []; // Removed auto-polling
 };
 
 const computePollTime = (startDateIso: string | null, attemptIndex: number): string | null => {
-  if (!startDateIso) {
-    return null;
-  }
-
-  const baseTimes = getBasePollTimes(startDateIso);
-  if (baseTimes.length === 0) {
-    return null;
-  }
-
-  if (attemptIndex < baseTimes.length) {
-    return baseTimes[attemptIndex].toISOString();
-  }
-
-  const baseLast = baseTimes[baseTimes.length - 1];
-
-  if (attemptIndex < baseTimes.length + 3) {
-    const offset = (attemptIndex - baseTimes.length + 1) * 30;
-    return addMinutes(baseLast, offset).toISOString();
-  }
-
-  const extraIndex = attemptIndex - (baseTimes.length + 3) + 1;
-  return addMinutes(baseLast, 90 + extraIndex * 120).toISOString();
+  return null; // Removed auto-polling
 };
 
 const scheduleFetchCandidate = (state: PersistedSyncState, now: Date): Date | null => {
-  if (state.global.scheduleComplete) {
-    return null;
-  }
-
-  const nowIst = getIstParts(now);
-  const todaySevenPm = fromIstParts(nowIst.year, nowIst.month, nowIst.day, 19, 0);
-  const todayKey = getIstDateKey(now);
-  const fetchedToday = state.global.lastScheduleFetchDateIst === todayKey;
-
-  if (!fetchedToday && now >= todaySevenPm) {
-    return now;
-  }
-
-  if (!fetchedToday) {
-    return todaySevenPm;
-  }
-
-  return addMinutes(todaySevenPm, 24 * 60);
+  return null; // Removed background schedule cron calculations
 };
 
 const computeNextSyncTarget = (
   state: PersistedSyncState,
   now: Date,
 ): { nextSyncAt: string | null; nextSyncReason: string | null } => {
-  const scheduleNext = scheduleFetchCandidate(state, now);
-  const unresolved = Object.values(state.matches)
-    .filter((match) => !match.finalized && match.nextPollAt)
-    .sort((left, right) => Date.parse(left.nextPollAt ?? "") - Date.parse(right.nextPollAt ?? ""));
-
-  let nextAt: Date | null = scheduleNext;
-  let reason: string | null = scheduleNext ? "Nightly schedule fetch (7:00 PM IST)" : null;
-
-  if (unresolved.length > 0) {
-    const matchNext = new Date(unresolved[0].nextPollAt ?? "");
-    if (!nextAt || matchNext < nextAt) {
-      nextAt = matchNext;
-      reason = `Match result poll (${unresolved[0].team1} vs ${unresolved[0].team2})`;
-    }
-  }
-
-  return {
-    nextSyncAt: nextAt ? nextAt.toISOString() : null,
-    nextSyncReason: reason,
-  };
+  return { nextSyncAt: null, nextSyncReason: null }; // Removed
 };
 
 const upsertScheduleFixtures = (state: PersistedSyncState, fixtures: LeagueMatch[], nowIso: string): void => {
@@ -289,11 +210,7 @@ const assignOpenSheetResults = (
 };
 
 const shouldRunScheduleFetch = (state: PersistedSyncState, now: Date, forceScheduleFetch = false): boolean => {
-  if (forceScheduleFetch) {
-    return true;
-  }
-  const candidate = scheduleFetchCandidate(state, now);
-  return candidate !== null && candidate <= now;
+  return forceScheduleFetch;
 };
 
 const processScheduleFetch = async (
@@ -347,12 +264,8 @@ const processDueMatches = async (
       if (match.finalized) {
         return false;
       }
-      if (forceResultFetch && match.startDate && Date.parse(match.startDate) <= now.getTime()) {
-        return true;
-      }
-      return match.nextPollAt && Date.parse(match.nextPollAt) <= now.getTime();
-    })
-    .sort((left, right) => Date.parse(left.nextPollAt ?? "") - Date.parse(right.nextPollAt ?? ""));
+      return forceResultFetch && match.startDate && Date.parse(match.startDate) <= now.getTime();
+    });
 
   if (dueMatches.length === 0) {
     return { dueCount: 0, finalizedCount: 0, pointsFetched: false };

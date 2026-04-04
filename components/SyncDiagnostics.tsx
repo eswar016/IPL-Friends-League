@@ -41,19 +41,8 @@ export const SyncDiagnostics = ({ status, nextSyncAt, nextSyncReason }: SyncDiag
       Sync diagnostics
     </summary>
     <div className="mt-2 space-y-1.5 border-t border-[rgba(135,160,210,0.1)] pt-2">
-      <p>
-        <span className="text-[var(--text-muted)]">Next GitHub ping (approx):</span>{" "}
-        <span className="font-mono text-[var(--text-primary)]">{formatUtc(status.nextGithubPingApproxAt)}</span>
-        <span className="text-[var(--text-muted)]"> · </span>
-        <span className="font-mono text-[var(--text-primary)]">{formatIst(status.nextGithubPingApproxAt)}</span>
-        <span className="block text-[9px] opacity-75 sm:text-[10px]">Cron is every 15 min on UTC quarter hours; GitHub may start a few seconds later.</span>
-      </p>
-      <p>
-        <span className="text-[var(--text-muted)]">Next provider API (IST):</span>{" "}
-        <span className="font-mono text-[var(--text-primary)]">{nextSyncAt ? formatIst(nextSyncAt) : "—"}</span>
-        {nextSyncReason ? (
-          <span className="block text-[9px] opacity-80 sm:text-[10px]">{nextSyncReason}</span>
-        ) : null}
+      <p className="text-[9px] uppercase tracking-wide text-[#ffb489] opacity-90 sm:text-[10px]">
+        Auto-Sync & Background Polling Disabled. Manual Admin Sync Only.
       </p>
       <p>
         <span className="text-[var(--text-muted)]">Last scheduler heartbeat (Redis):</span>{" "}
