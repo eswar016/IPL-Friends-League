@@ -97,6 +97,10 @@ interface RapidSeriesResponse {
 interface RapidPointsTeam {
   teamName?: string;
   teamFullName?: string;
+  matchesPlayed?: number;
+  matchesWon?: number;
+  matchesLost?: number;
+  points?: number;
   nrr?: string | number;
 }
 
@@ -515,20 +519,29 @@ const parseRapidFixtures = (payload: RapidSeriesResponse): LeagueMatch[] => {
   });
 };
 
-const parseRapidNrrMap = (payload: RapidPointsResponse): Partial<Record<TeamCode, number>> => {
-  const nrrMap: Partial<Record<TeamCode, number>> = {};
+const parseRapidPointsTable = (payload: RapidPointsResponse): PointsTableRow[] => {
+  const table: PointsTableRow[] = [];
 
   payload.pointsTable?.forEach((group) => {
-    group.pointsTableInfo?.forEach((teamRow) => {
-      const teamCode = normalizeTeamCode(teamRow.teamName, teamRow.teamFullName);
-      if (!teamCode) {
+    group.pointsTableInfo?.forEach((teamRow, index) => {
+      const code = normalizeTeamCode(teamRow.teamName, teamRow.teamFullName);
+      if (!code) {
         return;
       }
-      nrrMap[teamCode] = toNumber(teamRow.nrr) ?? 0;
+
+      table.push({
+        position: index + 1,
+        team: code,
+        matches: toNumber(teamRow.matchesPlayed) ?? 0,
+        wins: toNumber(teamRow.matchesWon) ?? 0,
+        losses: toNumber(teamRow.matchesLost) ?? 0,
+        points: toNumber(teamRow.points) ?? 0,
+        nrr: toNumber(teamRow.nrr) ?? 0,
+      });
     });
   });
 
-  return nrrMap;
+  return table.sort((a, b) => a.position - b.position);
 };
 
 const parseRevalidateSeconds = (): number => {
@@ -604,21 +617,24 @@ const fetchRapidApiPayload = async (revalidateSeconds: number): Promise<LivePayl
   const seriesPayload = await rapidFetch<RapidSeriesResponse>(`/series/v1/${seriesId}`, revalidateSeconds);
   const fixtures = parseRapidFixtures(seriesPayload);
 
-  let nrrByTeam: Partial<Record<TeamCode, number>> = {};
+  let directPointsTable: PointsTableRow[] = [];
   try {
     const pointsPayload = await rapidFetch<RapidPointsResponse>(
       `/stats/v1/series/${seriesId}/points-table`,
       revalidateSeconds,
     );
-    nrrByTeam = parseRapidNrrMap(pointsPayload);
-  } catch {
-    nrrByTeam = {};
+    directPointsTable = parseRapidPointsTable(pointsPayload);
+  } catch (err) {
+    console.error("Failed to parse RapidAPI custom points table", err);
+    directPointsTable = [];
   }
 
-  return {
-    fixtures,
-    pointsTable: buildPointsTableFromFixtures(fixtures, nrrByTeam),
-  };
+  // If RapidAPI returns exactly 10 teams in its payload, trust it implicitly. 
+  // Otherwise, use fallback math built from fixtures (which assumes 0 points until we get real match completes).
+  const pointsTable =
+    directPointsTable.length >= 10 ? directPointsTable : buildPointsTableFromFixtures(fixtures, {});
+
+  return { fixtures, pointsTable };
 };
 
 export const getLiveRevalidateSeconds = (): number => parseRevalidateSeconds();

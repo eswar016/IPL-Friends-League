@@ -83,21 +83,36 @@ export const MatchResults = ({ matches }: MatchResultsProps) => {
       </div>
 
       <div className="match-scroll-window pr-1 sm:pr-2">
-        {liveMatches.length > 0 ? <p className="mb-2 text-xs font-semibold tracking-[0.16em] text-[#ffb489]">LIVE</p> : null}
+        {liveMatches.length > 0 ? (
+          <div className="mb-4 flex items-center justify-between border-b border-[#ffb489]/30 pb-2">
+            <h3 className="text-sm font-bold tracking-[0.2em] text-[#ffb489]">🔴 LIVE IN PROGRESS</h3>
+            <span className="text-xs font-semibold text-[#ffb489]/80">{liveMatches.length}</span>
+          </div>
+        ) : null}
         <div className="grid gap-3">
           {liveMatches.map((match) => (
             <MatchCard key={match.id} match={match} />
           ))}
         </div>
 
-        {completedMatches.length > 0 ? <p className="mb-2 mt-5 text-xs font-semibold tracking-[0.16em] text-[var(--text-muted)]">COMPLETED</p> : null}
+        {completedMatches.length > 0 ? (
+          <div className="mt-8 mb-4 flex items-center justify-between border-b border-[rgba(135,160,210,0.2)] pb-2">
+            <h3 className="text-sm font-bold tracking-[0.2em] text-[#87a0d2]">COMPLETED MATCHES</h3>
+            <span className="text-xs font-semibold text-[var(--accent-gold)]">{completedMatches.length} Played</span>
+          </div>
+        ) : null}
         <div className="grid gap-3">
           {completedMatches.map((match) => (
             <MatchCard key={match.id} match={match} />
           ))}
         </div>
 
-        {upcomingMatches.length > 0 ? <p className="mb-2 mt-5 text-xs font-semibold tracking-[0.16em] text-[var(--text-muted)]">UPCOMING</p> : null}
+        {upcomingMatches.length > 0 ? (
+          <div className="mt-8 mb-4 flex items-center justify-between border-b border-[rgba(135,160,210,0.2)] pb-2">
+            <h3 className="text-sm font-bold tracking-[0.2em] text-[var(--text-muted)]">UPCOMING FIXTURES</h3>
+            <span className="text-xs font-semibold text-[var(--text-muted)]">{upcomingMatches.length} Remaining</span>
+          </div>
+        ) : null}
         <div className="grid gap-3">
           {upcomingMatches.map((match) => (
             <MatchCard key={match.id} match={match} />
