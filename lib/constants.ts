@@ -82,16 +82,16 @@ export const COMPLETED_MATCHES: LeagueMatch[] = [
 ];
 
 export const IPL_POINTS_TABLE: PointsTableRow[] = [
-  { position: 1, team: "GT", matches: 14, wins: 10, losses: 4, points: 20, nrr: 0.841 },
-  { position: 2, team: "RR", matches: 14, wins: 9, losses: 5, points: 18, nrr: 0.667 },
-  { position: 3, team: "CSK", matches: 14, wins: 8, losses: 6, points: 16, nrr: 0.394 },
-  { position: 4, team: "RCB", matches: 14, wins: 8, losses: 6, points: 16, nrr: 0.221 },
-  { position: 5, team: "SRH", matches: 14, wins: 7, losses: 7, points: 14, nrr: 0.118 },
-  { position: 6, team: "KKR", matches: 14, wins: 7, losses: 7, points: 14, nrr: -0.054 },
-  { position: 7, team: "LSG", matches: 14, wins: 6, losses: 8, points: 12, nrr: -0.129 },
-  { position: 8, team: "PBKS", matches: 14, wins: 6, losses: 8, points: 12, nrr: -0.227 },
-  { position: 9, team: "MI", matches: 14, wins: 5, losses: 9, points: 10, nrr: -0.418 },
-  { position: 10, team: "DC", matches: 14, wins: 4, losses: 10, points: 8, nrr: -0.613 },
+  { position: 1, team: "GT", matches: 14, wins: 10, losses: 4, nr: 0, points: 20, nrr: 0.841 },
+  { position: 2, team: "RR", matches: 14, wins: 9, losses: 5, nr: 0, points: 18, nrr: 0.667 },
+  { position: 3, team: "CSK", matches: 14, wins: 8, losses: 6, nr: 0, points: 16, nrr: 0.394 },
+  { position: 4, team: "RCB", matches: 14, wins: 8, losses: 6, nr: 0, points: 16, nrr: 0.221 },
+  { position: 5, team: "SRH", matches: 14, wins: 7, losses: 7, nr: 0, points: 14, nrr: 0.118 },
+  { position: 6, team: "KKR", matches: 14, wins: 7, losses: 7, nr: 0, points: 14, nrr: -0.054 },
+  { position: 7, team: "LSG", matches: 14, wins: 6, losses: 8, nr: 0, points: 12, nrr: -0.129 },
+  { position: 8, team: "PBKS", matches: 14, wins: 6, losses: 8, nr: 0, points: 12, nrr: -0.227 },
+  { position: 9, team: "MI", matches: 14, wins: 5, losses: 9, nr: 0, points: 10, nrr: -0.418 },
+  { position: 10, team: "DC", matches: 14, wins: 4, losses: 10, nr: 0, points: 8, nrr: -0.613 },
 ];
 
 export const PLAYER_NAME_BY_ID: Record<PlayerId, string> = {
