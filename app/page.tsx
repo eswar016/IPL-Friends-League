@@ -23,7 +23,7 @@ export default async function Home() {
           <PointsTable rows={dashboard.pointsTable} />
         </div>
 
-        <div className="space-y-6">
+        <div className="h-full">
           <MatchResults matches={dashboard.matches} />
         </div>
       </main>
