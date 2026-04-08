@@ -83,7 +83,8 @@ body {
 }
 
 .match-scroll-window {
-  max-height: min(68vh, 34rem);
+  /* Using 100% height allows the flex-grow from the parent flexbox to naturally constrain it without fixed limits */
+  height: 100%;
   overflow-y: auto;
   scroll-behavior: smooth;
 }
@@ -108,7 +109,7 @@ body {
 
 @media (max-width: 639px) {
   .match-scroll-window {
-    max-height: 26rem;
+    max-height: calc(100vh - 250px);
   }
 }
 
