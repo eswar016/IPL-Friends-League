@@ -23,7 +23,7 @@ export default async function Home() {
           <PointsTable rows={dashboard.pointsTable} />
         </div>
 
-        <div className="h-full">
+        <div className="h-[600px] lg:h-0 lg:min-h-full flex flex-col">
           <MatchResults matches={dashboard.matches} />
         </div>
       </main>
