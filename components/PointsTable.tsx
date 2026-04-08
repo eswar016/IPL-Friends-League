@@ -34,8 +34,8 @@ export const PointsTable = ({ rows }: PointsTableProps) => {
             <th className="px-3 py-3">M</th>
             <th className="px-3 py-3">W</th>
             <th className="px-3 py-3">L</th>
-            <th className="px-3 py-3 text-[#ffb489]/80">NR</th>
-            <th className="px-3 py-3">Pts</th>
+            <th className="px-3 py-3 text-[#ffb489]/90">NR</th>
+            <th className="px-3 py-3">PTS</th>
             <th className="px-3 py-3">NRR</th>
           </tr>
         </thead>
@@ -47,7 +47,7 @@ export const PointsTable = ({ rows }: PointsTableProps) => {
               <td className="px-3 py-3 text-[var(--text-muted)]">{row.matches}</td>
               <td className="px-3 py-3 text-[var(--text-muted)]">{row.wins}</td>
               <td className="px-3 py-3 text-[var(--text-muted)]">{row.losses}</td>
-              <td className="px-3 py-3 font-semibold text-[#ffb489]/80">{row.nr}</td>
+              <td className={`px-3 py-3 font-semibold ${row.nr > 0 ? "text-[#ffb489]" : "text-[var(--text-muted)]"}`}>{row.nr}</td>
               <td className="px-3 py-3 font-semibold text-[var(--accent-gold)]">{row.points}</td>
               <td className="px-3 py-3 text-[var(--text-muted)]">{formatNrr(row.nrr)}</td>
             </tr>
