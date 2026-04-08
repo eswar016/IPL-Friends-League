@@ -57,7 +57,7 @@ const MatchCard = ({ match }: { match: MatchResultRow }) => {
           ) : (
             <>
               <p className="text-xs font-semibold text-[var(--accent-gold)] sm:text-sm">
-                Winner: {match.winner ?? "Result unavailable"}
+                Winner: {match.winner ?? (match.state === "complete" ? "Result unavailable" : "TBD")}
               </p>
               {winningOwner ? (
                 <p className="mt-1 text-[13px] font-bold tracking-wide text-[#ffb489] sm:text-[15px]">

@@ -174,7 +174,7 @@ const assignOpenSheetResults = (
   allMatches: PersistedMatchState[],
   openSheetFixtures: LeagueMatch[],
 ): Map<string, LeagueMatch> => {
-  const completedRows = openSheetFixtures.filter((row) => row.winner !== null);
+  const completedRows = openSheetFixtures.filter((row) => row.winner !== null || row.state === "abandoned" || row.state === "complete");
   const rowsByPair = new Map<string, LeagueMatch[]>();
   completedRows.forEach((row) => {
     const key = pairKey(row.team1, row.team2);
@@ -278,10 +278,10 @@ const processDueMatches = async (
   dueMatches.forEach((match) => {
     const resolved = assignment.get(match.id);
 
-    if (resolved?.winner) {
+    if (resolved && (resolved.winner || resolved.state === "abandoned" || resolved.state === "complete")) {
       match.winner = resolved.winner;
-      match.state = "complete";
-      match.statusText = resolved.statusText || `${resolved.winner} won`;
+      match.state = resolved.state;
+      match.statusText = resolved.statusText || (resolved.winner ? `${resolved.winner} won` : "Match abandoned");
       match.finalized = true;
       match.resultKnown = true;
       match.nextPollAt = null;
