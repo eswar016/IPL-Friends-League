@@ -2,7 +2,7 @@ import { loadSyncState } from "@/lib/sync-store";
 import { runSchedulerSync } from "@/lib/sync-engine";
 import { NextResponse } from "next/server";
 
-export async function GET(request: Request) {
+export async function GET() {
   try {
     const state = await loadSyncState();
 
