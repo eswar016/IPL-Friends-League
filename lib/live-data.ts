@@ -504,9 +504,21 @@ const parseRapidFixtures = (payload: RapidSeriesResponse): LeagueMatch[] => {
         return;
       }
 
-      const state = normalizeState(matchInfo.state);
-      const statusText = (matchInfo.status ?? "").trim();
+      let state = normalizeState(matchInfo.state);
+      let statusText = (matchInfo.status ?? "").trim();
       let winner: TeamCode | null = null;
+      
+      const startDateIso = parseIsoDateFromEpochMs(matchInfo.startDate);
+
+      // Universal failsafe proxy: If RapidAPI never updates an abandoned match 
+      // and permanently leaves it as 'upcoming', we mathematically kill it after 24 hours past its start.
+      if (state === "upcoming" && startDateIso) {
+        const startMs = Date.parse(startDateIso);
+        if (Date.now() - startMs > 24 * 60 * 60 * 1000) {
+          state = "abandoned";
+          statusText = "Match Abandoned (No Result)";
+        }
+      }
 
       if (state === "complete") {
         winner = parseWinnerFromStatus(statusText, team1, team2);
