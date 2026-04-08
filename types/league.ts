@@ -19,7 +19,7 @@ export interface PlayerProfile {
   accentColor: string;
 }
 
-export type MatchState = "upcoming" | "in_progress" | "complete" | "unknown";
+export type MatchState = "upcoming" | "in_progress" | "complete" | "abandoned" | "unknown";
 
 export interface LeagueMatch {
   id: string;
@@ -67,6 +67,7 @@ export interface PointsTableRow {
   matches: number;
   wins: number;
   losses: number;
+  nr: number;
   points: number;
   nrr: number;
 }
@@ -87,6 +88,8 @@ export interface SchedulerStatus {
   lastError: string | null;
   /** Approximate next GitHub Actions ping (UTC quarter hour after page render). */
   nextGithubPingApproxAt: string;
+  autoSyncEnabled: boolean;
+  apiCallCount: number;
 }
 
 export interface LeagueDashboardData {

@@ -27,6 +27,8 @@ export interface PersistedGlobalState {
   stableNights: number;
   lastScheduleFetchAt: string | null;
   lastScheduleFetchDateIst: string | null;
+  autoSyncEnabled: boolean;
+  apiCallCount: number;
 }
 
 export interface PersistedSyncMeta {
@@ -57,6 +59,8 @@ const DEFAULT_STATE: PersistedSyncState = {
     stableNights: 0,
     lastScheduleFetchAt: null,
     lastScheduleFetchDateIst: null,
+    autoSyncEnabled: false,
+    apiCallCount: 0,
   },
   meta: {
     lastSyncAt: null,

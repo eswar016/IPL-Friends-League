@@ -1,1 +1,14 @@
-# Auto-sync action has been disabled by owner.
+name: Smart Auto-Sync Cron
+
+on:
+  schedule:
+    - cron: '*/15 * * * *'  # Runs every 15 minutes. Our Next.js API blocks all unneeded runs automatically.
+  workflow_dispatch:
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Smart Auto-Sync API
+        run: |
+          curl -X GET "https://ipl-friends-league.vercel.app/api/internal/sync"

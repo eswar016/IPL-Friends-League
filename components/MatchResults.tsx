@@ -50,14 +50,22 @@ const MatchCard = ({ match }: { match: MatchResultRow }) => {
         </>
       ) : (
         <div className="mt-3">
-          <p className="text-xs font-semibold text-[var(--accent-gold)] sm:text-sm">
-            Winner: {match.winner ?? (match.state === "complete" ? "Result unavailable" : "TBD")}
-          </p>
-          {winningOwner && match.state === "complete" ? (
-            <p className="mt-1 text-[13px] font-bold tracking-wide text-[#ffb489] sm:text-[15px]">
-              Winning Friend: {winningOwner} 🏆
-            </p>
-          ) : null}
+          {match.state === "abandoned" ? (
+            <span className="inline-flex rounded-full border border-gray-600 bg-gray-500/20 px-2.5 py-1 text-xs font-semibold tracking-wide text-gray-400">
+              Match Abandoned (No Result)
+            </span>
+          ) : (
+            <>
+              <p className="text-xs font-semibold text-[var(--accent-gold)] sm:text-sm">
+                Winner: {match.winner ?? "Result unavailable"}
+              </p>
+              {winningOwner ? (
+                <p className="mt-1 text-[13px] font-bold tracking-wide text-[#ffb489] sm:text-[15px]">
+                  Winning Friend: {winningOwner} 🏆
+                </p>
+              ) : null}
+            </>
+          )}
         </div>
       )}
 
@@ -69,14 +77,14 @@ const MatchCard = ({ match }: { match: MatchResultRow }) => {
 export const MatchResults = ({ matches }: MatchResultsProps) => {
   const [activeTab, setActiveTab] = useState<"upcoming" | "completed">("upcoming");
 
-  const liveMatches = matches
+    const liveMatches = matches
     .filter((match) => match.state === "in_progress")
     .sort((left, right) => toEpoch(left.startDate) - toEpoch(right.startDate));
   const completedMatches = matches
-    .filter((match) => match.state === "complete")
+    .filter((match) => match.state === "complete" || match.state === "abandoned")
     .sort((left, right) => toEpoch(right.startDate) - toEpoch(left.startDate));
   const upcomingMatches = matches
-    .filter((match) => match.state !== "complete" && match.state !== "in_progress")
+    .filter((match) => match.state !== "complete" && match.state !== "abandoned" && match.state !== "in_progress")
     .sort((left, right) => toEpoch(left.startDate) - toEpoch(right.startDate));
 
   return (

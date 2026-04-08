@@ -28,7 +28,9 @@ Open `http://localhost:3000`.
 - `GET /api/league/dashboard`
 - `GET /api/league/fixtures`
 - `GET /api/league/points`
-- **Internal Sync Operations are handled purely through Next.js Server Actions** (`app/actions/sync.ts`). All background CRON jobs and auto-polling logic have been purposefully removed to eliminate unintended API limit usage. Sync is manually triggered by explicit clicks on the `Sync Scores & Points` or `Force Schedule Fetch` buttons.
+- **Sync Engine & Auto-Sync**
+Data fetching logic lies inside `lib/sync-engine.ts` backed by `lib/sync-store.ts`.  
+A 15-minute GitHub Action (`sync-cron.yml`) pings `/api/internal/sync`. The app intercepts these pings and exits without triggering RapidAPI *unless* it is within the 11 PM or 7 PM (double header) completion windows **and** the Auto-Sync UI toggle is turned ON.
 
 ## Environment variables
 
@@ -78,8 +80,8 @@ Notes:
 4. Deploy. Vercel gives a public URL (`https://your-project.vercel.app`).
 5. Trigger first sync once:
    - `GET /api/internal/sync?key=YOUR_CRON_SECRET`
-6. **Manual Sync**:
-   - Since automated cron polling is intentionally disabled, you must click the "Sync Scores & Points" button on the UI whenever you wish to refresh and hydrate the real-time match results.
+6. **Automated Results Polling**: Uses a GitHub Action ping triggering a smart Next.js API. Through mathematical throttling, the API strictly blocks all incoming requests *unless* it falls inside standard Indian Standard Time completion windows (`11:00 PM - 12:00 AM`), drastically minimizing RapidAPI hits. It dynamically opens the `7:00 PM - 8:00 PM` block automatically on Double Header days.
+- **Smart Toggle**: Admin interface exposes an immediate toggle button to disable automated CRON hitting.
 
 After the first sync, the fetched snapshot is persisted in Redis and remains available across restarts/deploys until you manually pull a newer snapshot.
 

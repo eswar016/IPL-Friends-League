@@ -14,6 +14,7 @@ const buildZeroRows = (): PointsTableRow[] =>
     matches: 0,
     wins: 0,
     losses: 0,
+    nr: 0,
     points: 0,
     nrr: 0,
   }));
@@ -33,6 +34,7 @@ export const PointsTable = ({ rows }: PointsTableProps) => {
             <th className="px-3 py-3">M</th>
             <th className="px-3 py-3">W</th>
             <th className="px-3 py-3">L</th>
+            <th className="px-3 py-3 text-[#ffb489]/80">NR</th>
             <th className="px-3 py-3">Pts</th>
             <th className="px-3 py-3">NRR</th>
           </tr>
@@ -45,6 +47,7 @@ export const PointsTable = ({ rows }: PointsTableProps) => {
               <td className="px-3 py-3 text-[var(--text-muted)]">{row.matches}</td>
               <td className="px-3 py-3 text-[var(--text-muted)]">{row.wins}</td>
               <td className="px-3 py-3 text-[var(--text-muted)]">{row.losses}</td>
+              <td className="px-3 py-3 font-semibold text-[#ffb489]/80">{row.nr}</td>
               <td className="px-3 py-3 font-semibold text-[var(--accent-gold)]">{row.points}</td>
               <td className="px-3 py-3 text-[var(--text-muted)]">{formatNrr(row.nrr)}</td>
             </tr>

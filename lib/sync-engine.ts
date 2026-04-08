@@ -346,6 +346,8 @@ const buildDashboardFromState = (state: PersistedSyncState): LeagueDashboardData
       lastProviderFetchAt: coerceMetaString(state.meta.lastProviderFetchAt),
       lastError: coerceMetaError(state.meta.lastError),
       nextGithubPingApproxAt: getNextUtcQuarterHourAfter(pageNow).toISOString(),
+      autoSyncEnabled: Boolean(state.global.autoSyncEnabled),
+      apiCallCount: Number.isFinite(Number(state.global.apiCallCount)) ? Number(state.global.apiCallCount) : 0,
     },
     standings: computeStandings(PLAYERS, fixtures, TEAM_OWNERS),
     matches: evaluateMatches(fixtures, TEAM_OWNERS),
@@ -391,6 +393,7 @@ export const runSchedulerSync = async (options: SyncRunOptions = {}): Promise<Sy
   const providerFetched = scheduleFetched || resultSummary.dueCount > 0 || resultSummary.pointsFetched;
   state.meta.lastSyncAt = nowIso;
   if (providerFetched) {
+    state.global.apiCallCount = (state.global.apiCallCount || 0) + 1;
     state.meta.lastProviderFetchAt = nowIso;
   }
   state.meta.nextSyncAt = nextSync.nextSyncAt;

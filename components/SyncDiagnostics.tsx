@@ -41,9 +41,6 @@ export const SyncDiagnostics = ({ status, nextSyncAt, nextSyncReason }: SyncDiag
       Sync diagnostics
     </summary>
     <div className="mt-2 space-y-1.5 border-t border-[rgba(135,160,210,0.1)] pt-2">
-      <p className="text-[9px] uppercase tracking-wide text-[#ffb489] opacity-90 sm:text-[10px]">
-        Auto-Sync & Background Polling Disabled. Manual Admin Sync Only.
-      </p>
       <p>
         <span className="text-[var(--text-muted)]">Last scheduler heartbeat (Redis):</span>{" "}
         <span className="font-mono text-[var(--text-primary)]">{dash(status.lastSyncAt)}</span>
@@ -70,7 +67,10 @@ export const SyncDiagnostics = ({ status, nextSyncAt, nextSyncReason }: SyncDiag
           <span className="break-words font-mono text-[10px] sm:text-[11px]">{String(status.lastError)}</span>
         </p>
       ) : null}
-      <ManualSyncButton />
+      <ManualSyncButton 
+        initialAutoSync={status.autoSyncEnabled} 
+        apiCallCount={status.apiCallCount} 
+      />
     </div>
   </details>
 );

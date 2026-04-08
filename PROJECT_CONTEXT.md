@@ -16,6 +16,9 @@ A specialized, real-time sports dashboard built in Next.js to track a robust 3-p
 2. **Explicit Manual Trigger Polling:** The system only queries the live RapidAPI backend for match scores and standings when actively commanded to by an Administrator interface button click.
 3. **Standings & Leaderboard:** Point systems dictate 2 points per win. The `Leaderboard` compares the 3 Friends/Owners (Anil, Eswar, Mitesh) based on the collective wins of their respective drafted IPL franchises.
 4. **Enhanced UI Context:** Completed match cards explicitly display the "Winning Friend" accompanied by a trophy icon, elevating the user experience of tracking friend vs friend outcomes.
+- Standings logically merge No Results/Abandoned matches (`0 wins`) preventing standings inflation.
+- The Points Table accurately mirrors real-world points with specific tracking on exact NR (No Result) frequencies.
+- Data fetching uses a hybrid approach: A UI Toggle orchestrates a GitHub Action 15-minute ping, passing the traffic through an API Gateway that blocks execution anywhere outside of the `11 PM` and `7 PM` match completetion windows, radically cutting down API pings.
 
 ### Technical & Administrative Solutions
 - **Vercel Cron Blocks Bypassed:** Next.js Server Actions are utilized within the Admin UI (Sync Diagnostics component) to execute `runSchedulerSync()` directly on the Node backend, bypassing Vercel's REST `401 Unauthorized` routing firewall.

@@ -114,6 +114,7 @@ type TeamStat = {
   matches: number;
   wins: number;
   losses: number;
+  nr: number;
   nrr: number;
 };
 
@@ -165,6 +166,10 @@ const normalizeTeamCode = (...values: Array<string | undefined | null>): TeamCod
 
 const normalizeState = (state: string | undefined): MatchState => {
   const normalized = (state ?? "").trim().toLowerCase();
+  
+  if (normalized.includes("abandon") || normalized.includes("no result")) {
+    return "abandoned";
+  }
   if (normalized.includes("complete")) {
     return "complete";
   }
@@ -257,6 +262,7 @@ const buildPointsTableFromFixtures = (
         matches: 0,
         wins: 0,
         losses: 0,
+        nr: 0,
         nrr: nrrByTeam[team] ?? 0,
       };
       return acc;
@@ -265,7 +271,15 @@ const buildPointsTableFromFixtures = (
   );
 
   fixtures.forEach((match) => {
-    if (match.state !== "complete" || !match.winner) {
+    if ((match.state !== "complete" && match.state !== "abandoned") || !match.winner) {
+      if (match.state === "abandoned") {
+        stats[match.team1].matches += 1;
+        stats[match.team2].matches += 1;
+        stats[match.team1].nr += 1;
+        stats[match.team2].nr += 1;
+        // In IPL, abandoned match splits 1 point each
+        stats[match.team1].wins += 0;
+      }
       return;
     }
 
@@ -290,7 +304,8 @@ const buildPointsTableFromFixtures = (
     matches: stats[team].matches,
     wins: stats[team].wins,
     losses: stats[team].losses,
-    points: stats[team].wins * 2,
+    nr: stats[team].nr,
+    points: stats[team].wins * 2 + stats[team].nr,
     nrr: stats[team].nrr,
   }))
     .sort((left, right) => {
@@ -375,7 +390,8 @@ const parseOpenSheetPoints = (rows: RowRecord[]): PointsTableRow[] => {
       const matches = toNumber(getFieldValue(row, ["Matches", "M"])) ?? 0;
       const wins = toNumber(getFieldValue(row, ["Won", "Wins", "W"])) ?? 0;
       const losses = toNumber(getFieldValue(row, ["Lost", "Losses", "L"])) ?? 0;
-      const points = toNumber(getFieldValue(row, ["Points", "Pts"])) ?? wins * 2;
+      const nr = toNumber(getFieldValue(row, ["NR", "No Result", "N/R"])) ?? matches - (wins + losses);
+      const points = toNumber(getFieldValue(row, ["Points", "Pts"])) ?? wins * 2 + nr;
       const nrr = toNumber(getFieldValue(row, ["NRR", "Net Run Rate"])) ?? 0;
       const position = toNumber(getFieldValue(row, ["Position", "Pos", "Rank"])) ?? index + 1;
 
@@ -385,6 +401,7 @@ const parseOpenSheetPoints = (rows: RowRecord[]): PointsTableRow[] => {
         matches,
         wins,
         losses,
+        nr,
         points,
         nrr,
       } satisfies PointsTableRow;
@@ -496,6 +513,8 @@ const parseRapidFixtures = (payload: RapidSeriesResponse): LeagueMatch[] => {
         if (!winner) {
           winner = parseWinnerFromScore(item.matchScore, team1, team2);
         }
+      } else if (state === "abandoned") {
+        winner = null;
       }
 
       fixtures.push({
@@ -529,12 +548,17 @@ const parseRapidPointsTable = (payload: RapidPointsResponse): PointsTableRow[] =
         return;
       }
 
+      const played = toNumber(teamRow.matchesPlayed) ?? 0;
+      const won = toNumber(teamRow.matchesWon) ?? 0;
+      const lost = toNumber(teamRow.matchesLost) ?? 0;
+
       table.push({
         position: index + 1,
         team: code,
-        matches: toNumber(teamRow.matchesPlayed) ?? 0,
-        wins: toNumber(teamRow.matchesWon) ?? 0,
-        losses: toNumber(teamRow.matchesLost) ?? 0,
+        matches: played,
+        wins: won,
+        losses: lost,
+        nr: played - (won + lost),
         points: toNumber(teamRow.points) ?? 0,
         nrr: toNumber(teamRow.nrr) ?? 0,
       });
