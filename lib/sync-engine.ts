@@ -267,7 +267,7 @@ const processDueMatches = async (
       return forceResultFetch && match.startDate && Date.parse(match.startDate) <= now.getTime();
     });
 
-  if (dueMatches.length === 0) {
+  if (dueMatches.length === 0 && !forceResultFetch) {
     return { dueCount: 0, finalizedCount: 0, pointsFetched: false };
   }
 
