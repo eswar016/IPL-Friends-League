@@ -432,3 +432,21 @@ export const getCachedDashboardData = async (): Promise<LeagueDashboardData> => 
   }
   return buildDashboardFromState(state);
 };
+
+export const runPointsTableSync = async (): Promise<{ ok: boolean; error?: string }> => {
+  try {
+    const state = await loadSyncState();
+    const livePayload = await fetchLiveLeaguePayload();
+    if (livePayload.pointsTable.length > 0) {
+      state.pointsTable = livePayload.pointsTable;
+      state.meta.lastSyncAt = new Date().toISOString();
+      state.meta.lastProviderFetchAt = new Date().toISOString();
+      state.global.apiCallCount = (state.global.apiCallCount || 0) + 1;
+      await saveSyncState(state);
+    }
+    return { ok: true };
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Unknown points sync failure";
+    return { ok: false, error: message };
+  }
+};

@@ -1,6 +1,6 @@
 "use server";
 
-import { runSchedulerSync } from "@/lib/sync-engine";
+import { runSchedulerSync, runPointsTableSync } from "@/lib/sync-engine";
 import { loadSyncState, saveSyncState } from "@/lib/sync-store";
 
 export async function forceSyncAction(forceSchedule = false) {
@@ -25,6 +25,16 @@ export async function toggleAutoSyncAction() {
     return { success: true, enabled: state.global.autoSyncEnabled };
   } catch (error) {
     const message = error instanceof Error ? error.message : "Failed to toggle Auto-Sync";
+    return { success: false, error: message };
+  }
+}
+
+export async function forcePointsSyncAction() {
+  try {
+    const summary = await runPointsTableSync();
+    return { success: summary.ok, error: summary.error };
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Unknown points sync failure";
     return { success: false, error: message };
   }
 }

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { forceSyncAction, toggleAutoSyncAction } from "@/app/actions/sync";
+import { forceSyncAction, toggleAutoSyncAction, forcePointsSyncAction } from "@/app/actions/sync";
 
 interface ManualSyncButtonProps {
   initialAutoSync: boolean;
@@ -26,6 +26,22 @@ export const ManualSyncButton = ({ initialAutoSync, apiCallCount }: ManualSyncBu
     } catch (error) {
       console.error("Manual sync error:", error);
       alert("Failed to sync manually. Check console for details.");
+    } finally {
+      setIsSyncing(false);
+    }
+  };
+
+  const handlePointsSync = async () => {
+    try {
+      setIsSyncing(true);
+      const res = await forcePointsSyncAction();
+      if (!res.success) {
+        throw new Error(`Points sync failed: ${res.error}`);
+      }
+      router.refresh();
+    } catch (error) {
+      console.error("Points sync error:", error);
+      alert("Failed to sync points explicitly.");
     } finally {
       setIsSyncing(false);
     }
@@ -93,6 +109,17 @@ export const ManualSyncButton = ({ initialAutoSync, apiCallCount }: ManualSyncBu
           <span className="text-[9px] uppercase tracking-wider text-[var(--text-muted)]">API Calls</span>
           <p className="font-mono text-[11px] font-bold text-[#ffb489]">{apiCallCount}</p>
         </div>
+      </div>
+      
+      <div className="flex justify-between items-center mt-2">
+        <button
+          onClick={handlePointsSync}
+          disabled={isSyncing}
+          className="rounded border border-[var(--accent-gold)] bg-[rgba(255,180,137,0.1)] px-3 py-1 text-[10px] font-medium text-[var(--accent-gold)] transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          {isSyncing ? "Syncing..." : "Force Sync Points Table"}
+        </button>
+        <div className="text-[10px] text-[var(--text-muted)] font-mono">v1.0.1</div>
       </div>
     </div>
   );
